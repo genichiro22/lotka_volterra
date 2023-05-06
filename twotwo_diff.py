@@ -5,12 +5,12 @@ from scipy.ndimage import convolve
 from matplotlib.colors import LogNorm
 
 # Parameters
-alpha1, alpha2, beta11, beta12, beta21, beta22 = 0.1, 0.1, 0.4, 0.4, 0.4, 0.4
-delta11, delta12, delta21, delta22, gamma1, gamma2 = 0.2, 0.2, 0.2, 0.2, 0.2, 0.2
-psi12, psi21, K1, K2 = 1, 0.3, 2000, 1000
-xi12, xi21, L1, L2 = 1, 0.3, 100, 50
-D_P1, D_P2, D_Q1, D_Q2 = 0.05, 0.05, 0.1, 0.1
-dt = 0.01
+alpha1, alpha2, beta11, beta12, beta21, beta22 = 0.1, 0.1, 0.3, 0.43, 0.4, 0.41
+delta11, delta12, delta21, delta22, gamma1, gamma2 = 0.24, 0.21, 0.23, 0.2, 0.2, 0.2
+psi12, psi21, K1, K2 = 1, 0.3, 2000, 1300
+xi12, xi21, L1, L2 = 0.3, 1, 65, 100 # 1, 0.3, 100, 65
+D_P1, D_P2, D_Q1, D_Q2 = 0.001, 0.003, 0.002, 0.0015
+dt = 0.05
 steps = 10000
 
 # Grid size
@@ -20,10 +20,10 @@ y = np.linspace(0, 2 * np.pi, ny)
 xx, yy = np.meshgrid(x, y)
 
 # Initialize arrays
-P1 = 1 + 0.5 * np.sin(2*xx*xx/nx) * np.sin(yy/ny)
-P2 = 1 + 0.5 * np.sin(2*(nx-xx)*(nx-xx)/nx) * np.sin((ny-yy)/ny)
-Q1 = 1 + 0.5 * np.cos(xx/3) * np.cos(2*yy*xx/ny)
-Q2 = 1 + 0.5 * np.cos(nx-xx) * np.cos(2*(ny-yy)*(xx))
+P1 = 1 + 0.5 * np.sin(2*xx*xx) * np.sin(yy)
+P2 = 1 + 0.5 * np.sin(2*(6-xx)*(6-xx)) * np.sin((6-yy))
+Q1 = 1 + 0.5 * np.cos(xx) * np.cos(2*yy*xx)
+Q2 = 1 + 0.5 * np.cos(6-xx) * np.cos(2*(6-yy)*(xx))
 
 # Laplacian function
 def laplacian(Z):
@@ -33,7 +33,7 @@ def laplacian(Z):
 # Update function for animation
 def update(num):
     global P1, P2, Q1, Q2
-    for _ in range(5):
+    for _ in range(10):
         P1_lap = laplacian(P1)
         P2_lap = laplacian(P2)
         Q1_lap = laplacian(Q1)
@@ -69,25 +69,27 @@ vmin_Q2, vmax_Q2 = 1e-5, 10
 # Set up the plot
 fig, ((ax_P1, ax_P2), (ax_Q1, ax_Q2)) = plt.subplots(2, 2, figsize=(15, 10))
 
-im_P1 = ax_P1.imshow(P1, cmap='viridis', interpolation='bilinear', extent=[0, nx, 0, ny],
+interpolation = None
+
+im_P1 = ax_P1.imshow(P1, cmap='viridis', interpolation=interpolation, extent=[0, nx, 0, ny],
                      norm=LogNorm(vmin=vmin_P1, vmax=vmax_P1))
 ax_P1.set_title('P1 Concentration')
 plt.colorbar(im_P1, ax=ax_P1)
 sum_P1_text = ax_P1.text(5, 5, '', color='white', fontsize=12)
 
-im_P2 = ax_P2.imshow(P2, cmap='plasma', interpolation='bilinear', extent=[0, nx, 0, ny],
+im_P2 = ax_P2.imshow(P2, cmap='viridis', interpolation=interpolation, extent=[0, nx, 0, ny],
                      norm=LogNorm(vmin=vmin_P2, vmax=vmax_P2))
 ax_P2.set_title('P2 Concentration')
 plt.colorbar(im_P2, ax=ax_P2)
 sum_P2_text = ax_P2.text(5, 5, '', color='white', fontsize=12)
 
-im_Q1 = ax_Q1.imshow(Q1, cmap='inferno', interpolation='bilinear', extent=[0, nx, 0, ny],
+im_Q1 = ax_Q1.imshow(Q1, cmap='plasma', interpolation=interpolation, extent=[0, nx, 0, ny],
                      norm=LogNorm(vmin=vmin_Q1, vmax=vmax_Q1))
 ax_Q1.set_title('Q1 Concentration')
 plt.colorbar(im_Q1, ax=ax_Q1)
 sum_Q1_text = ax_Q1.text(5, 5, '', color='white', fontsize=12)
 
-im_Q2 = ax_Q2.imshow(Q2, cmap='magma', interpolation='bilinear', extent=[0, nx, 0, ny],
+im_Q2 = ax_Q2.imshow(Q2, cmap='plasma', interpolation=interpolation, extent=[0, nx, 0, ny],
                      norm=LogNorm(vmin=vmin_Q2, vmax=vmax_Q2))
 ax_Q2.set_title('Q2 Concentration')
 plt.colorbar(im_Q2, ax=ax_Q2)
