@@ -20,29 +20,29 @@ class SimulationState:
         initial_population = np.exp(-(x**2 + y**2))
 
         def create_initial_population(freq1, freq2, freq3):
-            return 2.01 + np.sin(freq1 * x) * np.cos(freq2 * y) + np.sin(freq3 * x) * np.cos(freq3 * y)
+            return 2.01 + np.sin(freq1 * x) * np.cos(freq2 * y) + np.sin(freq3 * x * np.sin(y)) * np.cos(freq3 * y)
 
-        self.p1 = create_initial_population(freq1=1, freq2=2, freq3=4)*0
-        self.p2 = create_initial_population(freq1=4, freq2=7, freq3=6)*0+1
-        self.q1 = create_initial_population(freq1=7, freq2=8, freq3=2)*0
-        self.q2 = create_initial_population(freq1=3, freq2=1, freq3=8)*0+1
+        self.p1 = create_initial_population(freq1=1, freq2=2, freq3=4)
+        self.p2 = create_initial_population(freq1=4, freq2=7, freq3=6)
+        self.q1 = create_initial_population(freq1=7, freq2=8, freq3=2)
+        self.q2 = create_initial_population(freq1=3, freq2=1, freq3=1)
         self.time = 0
 
     def update(self, params, dt):
-        d_p1 = params.alphas[0] * self.p1 * (1 - (self.p1 + params.psis[0, 0] * self.p2) / params.ks[0]) - \
+        d_p1 = params.alphas[0] * self.p1 * (1 - (self.p1 + params.psis[0, 0] * self.p2) *0/ params.ks[0]) - \
             params.betas[0, 0] * self.p1 * self.q1 - params.betas[0, 1] * self.p1 * self.q2 + \
             params.ds[0, 0] * self.laplacian(self.p1)
 
-        d_p2 = params.alphas[1] * self.p2 * (1 - (self.p2 + params.psis[1, 0] * self.p1) / params.ks[1]) - \
+        d_p2 = params.alphas[1] * self.p2 * (1 - (self.p2 + params.psis[1, 0] * self.p1) *0/ params.ks[1]) - \
             params.betas[1, 0] * self.p2 * self.q1 - params.betas[1, 1] * self.p2 * self.q2 + \
             params.ds[0, 1] * self.laplacian(self.p2)
 
         d_q1 = params.deltas[0, 0] * self.p1 * self.q1 + params.deltas[1, 0] * self.p2 * self.q1 - \
-            params.gammas[0] * self.q1 * (1 - (self.q1 + params.xis[0, 0] * self.q2) / params.ls[0]) + \
+            params.gammas[0] * self.q1 * (1 - (self.q1 + params.xis[0, 0] * self.q2) *0/ params.ls[0]) + \
             params.ds[1, 0] * self.laplacian(self.q1)
 
         d_q2 = params.deltas[0, 1] * self.p1 * self.q2 + params.deltas[1, 1] * self.p2 * self.q2 - \
-            params.gammas[1] * self.q2 * (1 - (self.q2 + params.xis[1, 0] * self.q1) / params.ls[1]) + \
+            params.gammas[1] * self.q2 * (1 - (self.q2 + params.xis[1, 0] * self.q1) *0/ params.ls[1]) + \
             params.ds[1, 1] * self.laplacian(self.q2)
 
         self.p1 += dt * d_p1
@@ -57,23 +57,23 @@ class SimulationState:
 
 def main():
     alphas = [0.2, 0.2]
-    betas = [[0.3, 0.3], [0.3, 0.3]]
-    psis = [[1], [0.3]]
-    deltas = [[0.2, 0.20], [0.2, 0.2]]
-    gammas = [0.2, 0.2]
-    xis = [[0.3], [1]]
-    ks = [2, 1.3]
-    ls = [6.5, 10.0]
-    ds = [[0.001, 0.003], [0.002, 0.0015]]
+    betas = [[0.2, 0.1], [0.1, 0.23]]
+    psis = [[0], [0]]
+    deltas = [[0.15, 0.2], [0.15, 0.1]]
+    gammas = [0.1, 0.1]
+    xis = [[0], [0]]
+    ks = [2e20, 1.3e20]
+    ls = [6.5e20, 10.0e20]
+    ds = [[0.01, 0.03], [0.02, 0.05]]
 
     params = SimulationParameters(alphas, betas, psis, deltas, gammas, xis, ks, ls, ds)
 
-    width, height = 1, 1
+    width, height = 25, 25
     state = SimulationState(width, height)
     # Initialize the state with initial population distributions
 
     dt = 0.01  # Time step for the simulation
-    num_iterations = 3000000  # Number of iterations for the simulation
+    num_iterations = 50000  # Number of iterations for the simulation
 
     # Create empty lists to store the population data for each species
     p1_populations = []
@@ -139,6 +139,7 @@ def main():
             # plt.draw()
 
             # Update the time series x-axis limits
+            # print(p1_populations+p2_populations)
             axs[0, 0].set_xlim(0, len(p1_populations))
             axs[1, 0].set_xlim(0, len(q1_populations))
             axs[0, 0].set_ylim(0, max(p1_populations+p2_populations))
